@@ -1,0 +1,28 @@
+# Example YAML configuration
+experiment_name: "generic_seq2seq_experiment"
+
+model:
+  encoder:
+    input_dim: 5000
+    emb_dim: 256
+    hidden_dim: 256
+    num_layers: 1
+  decoder:
+    output_dim: 5000
+    emb_dim: 256
+    hidden_dim: 256
+    num_layers: 1
+
+training:
+  batch_size: 32
+  epochs: 10
+  learning_rate: 0.001
+  teacher_forcing_ratio: 0.5
+
+data:
+  train_path: "./data/dataset.csv"
+  max_seq_len: 50
+
+misc:
+  save_dir: "./checkpoints/"
+  device: "cuda"
