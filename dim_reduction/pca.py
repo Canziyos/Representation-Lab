@@ -1,29 +1,32 @@
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
+from .utils import pca_compression_ratio
 
-img = Image.open("data/1.jpg")
 
-# Pick scale based on bit depth.
-if img.mode in ["L", "RGB", "RGBA"]:
-    scale = 255.0
-elif img.mode in ["I;16", "I;16B"]:
-    scale = 65535.0
-else:
-    scale = 1.0 
+# img = Image.open("data/1.jpg")
 
-arr = np.array(img) / scale
+# # Pick scale based on bit depth.
+# if img.mode in ["L", "RGB", "RGBA"]:
+#     scale = 255.0
+# elif img.mode in ["I;16", "I;16B"]:
+#     scale = 65535.0
+# else:
+#     scale = 1.0 
 
-# Prepare data for PCA.
-if img.mode == "L":  # grayscale.
-    data = arr                     # shape (H, W).
-elif img.mode == "RGB":
-    data = arr.reshape(arr.shape[0], -1)  # shape (H, W*3).
-elif img.mode == "RGBA":
-    data = arr.reshape(arr.shape[0], -1)  # shape (H, W*4).
-else:
-    raise ValueError(f"Unsupported mode: {img.mode}")
+# arr = np.array(img) / scale
 
+# # Prepare data for PCA.
+# if img.mode == "L":  # grayscale.
+#     data = arr                     # shape (H, W).
+# elif img.mode == "RGB":
+#     data = arr.reshape(arr.shape[0], -1)  # shape (H, W*3).
+# elif img.mode == "RGBA":
+#     data = arr.reshape(arr.shape[0], -1)  # shape (H, W*4).
+# else:
+#     raise ValueError(f"Unsupported mode: {img.mode}")
+img = Image.open("data/1.jpg").convert("L")  # force grayscale
+data = np.array(img) / 255.0
 # Center the data.
 feature_mean = np.mean(data, axis=0)
 centered = data - feature_mean
@@ -64,10 +67,10 @@ reconstructed = np.clip(reconstructed, 0, 1)
 # Reshape back to image.
 if img.mode == "L":
     recon_img = reconstructed
-elif img.mode == "RGB":
-    recon_img = reconstructed.reshape(arr.shape[0], arr.shape[1], 3)
-elif img.mode == "RGBA":
-    recon_img = reconstructed.reshape(arr.shape[0], arr.shape[1], 4)
+# elif img.mode == "RGB":
+#     recon_img = reconstructed.reshape(data.shape[0], data.shape[1], 3)
+# elif img.mode == "RGBA":
+#     recon_img = reconstructed.reshape(data.shape[0], data.shape[1], 4)
 
 
 # ==== Visualization ====
@@ -75,7 +78,7 @@ plt.figure(figsize=(10, 4))
 
 # Original
 plt.subplot(1, 2, 1)
-plt.imshow(arr)
+plt.imshow(data)
 plt.title("Original")
 plt.axis("off")
 
@@ -100,16 +103,6 @@ for i, (a, b) in enumerate(pairs):
 plt.tight_layout()
 plt.show()
 
-# ---- Heatmap of all projections ----
-plt.figure(figsize=(8, 6))
-plt.imshow(proj_data[:, :50], aspect="auto", cmap="viridis")
-plt.colorbar(label="Projection Value")
-plt.title("Projections onto First 50 PCs")
-plt.xlabel("Principal Component")
-plt.ylabel("Sample (row index)")
-plt.show()
-
-from utils import pca_compression_ratio
 
 stats = pca_compression_ratio(centered.shape, k)
 print(f"Original size: {stats['original_size']}")
